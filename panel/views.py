@@ -53,7 +53,7 @@ def signout(request):
     logout(request)
     return redirect("signin")
 
-
+@login_required
 def index(request):
     nombre_usuario = request.user.username
     return render(request, "home.html", {'nombre_usuario': nombre_usuario})
