@@ -43,7 +43,7 @@ def signup(request):
             )
             user.save()
             login(request, user)
-            return redirect("home")
+            return redirect("signin")
         except IntegrityError:
             messages.error(request, 'Username already exists')
             return redirect('signup')
