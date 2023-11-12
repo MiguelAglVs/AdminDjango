@@ -54,7 +54,7 @@ def signout(request):
     return redirect("signin")
 
 
-def home(request):
+def index(request):
     nombre_usuario = request.user.username
     return render(request, "home.html", {'nombre_usuario': nombre_usuario})
 
