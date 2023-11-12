@@ -6,10 +6,17 @@ from django.db import IntegrityError
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
+from django.http import HttpResponseServerError
+
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .forms import *
 from .models import *
+
+import logging
+
+# Obtiene un logger para tu aplicación
+logger = logging.getLogger(__name__)
 
 
 def signin(request):
@@ -53,15 +60,22 @@ def signout(request):
     logout(request)
     return redirect("signin")
 
+
 @login_required
 def index(request):
-    nombre_usuario = request.user.username
-    return render(request, "home.html", {'nombre_usuario': nombre_usuario})
+    try:
+        nombre_usuario = request.user.username
+        return render(request, "home.html", {'nombre_usuario': nombre_usuario})
+    except Exception as e:
+        logger.error(f"Error en la vista home: {e}")
+        return HttpResponseServerError("Error interno del servidor")
+
 
 @login_required
 def users(request):
     nombre_usuario = request.user.username
     return render(request, "users.html", {'nombre_usuario': nombre_usuario})
+
 
 @login_required
 def persons(request):
@@ -93,11 +107,13 @@ def persons(request):
             else:
                 for field, errors in form.errors.items():
                     for error in errors:
-                        messages.error(request, f'Error en el campo {field}: {error}')
+                        messages.error(request, f'Error en el campo {
+                                       field}: {error}')
                 return render(request, "persons.html", {'nombre_usuario': nombre_usuario, 'form': form, 'personas': personas})
         except Exception as e:
             messages.error(request, f'Error al agregar la persona: {e}')
             return redirect('persons')
+
 
 @login_required
 def update_person(request, persona_dni):
@@ -117,6 +133,7 @@ def update_person(request, persona_dni):
             messages.error(
                 request, 'Error al actualizar la persona. Por favor, verifica los datos.')
             return render(request, "update_person.html", {'form': form, 'persona': persona})
+
 
 @login_required
 def delete_person(request, persona_dni):
