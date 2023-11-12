@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>personas</h1>
+<div class="container-fluid mt-5">
+	<div class="row row-cols-1 row-cols-sm-2 row-cols-md-2">
+		<div class="col">
+			<form method="post">
+				{% csrf_token %}
+				<div class="form-floating mb-3">
+					{{ form.dni }}
+					<label for="{{ form.nombre.id_for_label }}">Dni</label>
+				</div>
+				<div class="form-floating mb-3">
+					{{ form.nombre }}
+					<label for="{{ form.nombre.id_for_label }}">Nombre completo</label>
+				</div>
+				<div class="form-floating mb-3">
+					{{ form.apellido }}
+					<label for="{{ form.apellido.id_for_label }}">Apellido paterno</label>
+				</div>
+				<div class="form-floating mb-3">
+					{{ form.apellido_materno }}
+					<label for="{{ form.apellido_materno.id_for_label }}">Apellido materno</label>
+				</div>
+				<div class="form-floating mb-3">
+					{{ form.fecha_nacimiento }}
+					<label for="{{ form.fecha_nacimiento.id_for_label }}">Fecha nacimiento</label>
+				</div>
+				<div class="form-floating mb-3">
+					{{ form.eps }}
+					<label for="{{ form.eps.id_for_label }}">Eps</label>
+				</div>
+				<div class="form-floating mb-3">
+					{{ form.discapacidad }}
+					<label for="{{ form.discapacidad.id_for_label }}">Discapacidad</label>
+				</div>
+				<div class="form-floating mb-3">
+					{{ form.diagnostico }}
+					<label for="{{ form.diagnostico.id_for_label }}">Diagnostico</label>
+				</div>
+				<div class="d-grid gap-2 col-6 mx-auto">
+					<button type="submit" class="btn btn-primary">Create</button>
+				</div>
+			</form>
+		</div>
+		<div class="col">
+			<table id="miTabla" class="table table-bordered table-striped table-hover">
+				<thead class="table-dark">
+					<tr>
+						<th scope="col">Dni</th>
+						<th scope="col">Nombre</th>
+						<th scope="col">Edad</th>
+						<th scope="col">Eps</th>
+						<th scope="col">Diagnostico</th>
+						<th scope="col">Dispacidad</th>
+						<th scope="col">Acudiente</th>
+						<th scope="col">Options</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for persona in personas %}
+					<tr>
+						<td>{{ persona.dni }}</td>
+						<td>{{ persona.nombre }} {{ persona.apellido }} {{ persona.apellido_materno }}</td>
+						<td>{{ persona.calcular_edad }}</td>
+						<td>{{ persona.eps }}</td>
+						<td>{{ persona.discapacidad }}</td>
+						<td>{{ persona.diagnostico }}</td>
+						<td>{{ persona.user }}</td>
+						<td>
+							<div class="btn-group" role="group">
+								<a href="{% url 'delete_person' persona.dni %}" class="btn btn-danger"><i
+										class="fa-solid fa-trash"></i></a>
+								<button type="button" class="btn btn-primary" data-bs-toggle="modal"
+									data-bs-target="#modal_{{ persona.dni }}">
+									<i class="fa-solid fa-pencil"></i>
+								</button>
+							</div>
+						</td>
+
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			<div class="pagination d-grid gap-2 d-md-flex justify-content-md-end pt-2">
+				<ul class="pagination">
+					{% if personas.paginator.num_pages > 3 and personas.has_previous %}
+					<li class="page-item"><a class="page-link" href="?page=1"><i
+								class="fa-solid fa-angles-left"></i></a>
+					</li>
+					<li class="page-item"><a class="page-link" href="?page={{ personas.previous_page_number }}"><i
+								class="fa-solid fa-angle-left"></i></a></li>
+					{% endif %}
+
+					{% for i in personas.paginator.page_range %}
+					{% if i == personas.number %}
+					<li class="page-item active"><span class="page-link">{{ i }}</span></li>
+					{% elif i > personas.number|add:'-2' and i < personas.number|add:'2' %} <li class="page-item"><a
+							class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+						{% elif i == personas.number|add:'-2' or i == personas.number|add:'2' %}
+						<li class="page-item disabled"><span class="page-link">...</span></li>
+						{% endif %}
+						{% endfor %}
+
+						{% if personas.has_next %}
+						<li class="page-item"><a class="page-link" href="?page={{ personas.next_page_number }}"><i
+									class="fa-solid fa-angle-right"></i></a></li>
+						<li class="page-item"><a class="page-link" href="?page={{ personas.paginator.num_pages }}"><i
+									class="fa-solid fa-angles-right"></i></a></li>
+						{% endif %}
+				</ul>
+			</div>
+		</div>
+	</div>
+	<!-- Modal -->
+	{% for persona in personas %}
+	<div class="modal fade" id="modal_{{ persona.dni }}" tabindex="-1" aria-labelledby="ModalLabel{{ persona.dni }}"
+		aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h1 class="modal-title fs-5" id="ModalLabel{{ persona.dni }}">Editar a {{ persona.nombre }}
+							{{persona.apellido }} {{ persona.apellido_materno }}</h1>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<form method="post" action="{% url 'update_person' persona.dni %}"
+							class="row row-cols-1 row-cols-sm-2 row-cols-md-2">
+							{% csrf_token %}
+							<div class="col">
+								<div class="form-floating mb-3">
+									{{ form.dni }}
+									<label for="{{ form.nombre.id_for_label }}">Dni</label>
+								</div>
+								<div class="form-floating mb-3">
+									{{ form.nombre }}
+									<label for="{{ form.nombre.id_for_label }}">Nombre completo</label>
+								</div>
+								<div class="form-floating mb-3">
+									{{ form.apellido }}
+									<label for="{{ form.apellido.id_for_label }}">Apellido paterno</label>
+								</div>
+								<div class="form-floating mb-3">
+									{{ form.apellido_materno }}
+									<label for="{{ form.apellido_materno.id_for_label }}">Apellido materno</label>
+								</div>
+							</div>
+							<div class="col">
+								<div class="form-floating mb-3">
+									{{ form.fecha_nacimiento }}
+									<label for="{{ form.fecha_nacimiento.id_for_label }}">Fecha nacimiento</label>
+								</div>
+								<div class="form-floating mb-3">
+									{{ form.eps }}
+									<label for="{{ form.eps.id_for_label }}">Eps</label>
+								</div>
+								<div class="form-floating mb-3">
+									{{ form.discapacidad }}
+									<label for="{{ form.discapacidad.id_for_label }}">Discapacidad</label>
+								</div>
+								<div class="form-floating mb-3">
+									{{ form.diagnostico }}
+									<label for="{{ form.diagnostico.id_for_label }}">Diagnostico</label>
+								</div>
+							</div>
+							<div class="d-grid gap-2 col-6 mx-auto">
+								<button type="submit" class="btn btn-primary">Guardar</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	{% endfor %}
+</div>
+</div>
+
+{% endblock %}
